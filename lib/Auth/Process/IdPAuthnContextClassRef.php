@@ -2,8 +2,18 @@
 
 
 /**
- * Filter for setting the AuthnContextClassRef in the response based on the 
+ * Filter for saving the IdP AuthnContextClassRef in the response based on the 
  * value of the supplied attribute.
+ * 
+ * Example configuration in metadata/saml20-idp-hosted.php:
+ * 
+ *      authproc = array(
+ *          ...
+ *          41 => array(
+ *              'class' => 'assurance:IdPAuthnContextClassRef',
+ *              'attribute' => 'eduPersonAssurance',
+ *          ),
+ *
  *
  * @package SimpleSAMLphp
  */
@@ -51,9 +61,8 @@ class sspmod_assurance_Auth_Process_IdPAuthnContextClassRef extends SimpleSAML_A
         assert('array_key_exists("Attributes", $state)');
 
         $assuranceWhitelist = array(
-            'https://refeds.org/assurance/IAP/low',
-            'https://refeds.org/assurance/IAP/medium',
-            'https://refeds.org/assurance/IAP/high',
+            'https://refeds.org/profile/sfa',
+            'https://refeds.org/profile/mfa',
         );
 
         if (array_key_exists($this->attribute, $state['Attributes']) && !empty(array_intersect($state['Attributes'][$this->attribute], $assuranceWhitelist))) {

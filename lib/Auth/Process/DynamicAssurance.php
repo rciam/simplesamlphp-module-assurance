@@ -4,6 +4,18 @@
 /**
  * Filter for setting the AuthnContextClassRef in the response based on the 
  * value of the supplied attribute.
+ * 
+ * Example configuration in metadata/saml20-idp-hosted.php:
+ * 
+ *      authproc = array(
+ *          ...
+ *          40 => array(
+ *              'class' => 'assurance:DynamicAssurance',
+ *              'entitlements' => array(
+ *                  'urn:mace:www.example.org:entitlement01',
+ *                  'urn:mace:www.example.org:entitlement02',
+ *              ),
+ *          ),
  *
  * @package SimpleSAMLphp
  */
@@ -19,18 +31,11 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
     private $_attribute = 'eduPersonAssurance';
 
     private $_candidates = array(
-        'https://refeds.org/assurance/ID/unique',
-        'https://refeds.org/assurance/IAP/local-enterprise',
-        'https://refeds.org/assurance/IAP/low',
-        'https://refeds.org/assurance/IAP/medium',
-        'https://refeds.org/assurance/IAP/high',
-        'https://refeds.org/assurance/ATP/ePA-1m',
-        'https://refeds.org/assurance/ATP/ePA-1d',
-        'https://refeds.org/assurance/profile/espresso',
-        'https://refeds.org/assurance/profile/cappuccino',
+        'https://refeds.org/profile/sfa',
+        'https://refeds.org/profile/mfa',
     );
 
-    private $_default = 'https://refeds.org/assurance/IAP/low';
+    private $_default = 'https://www.example.org/low';
 
     private $_entitlements;
 
@@ -119,17 +124,17 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         }
         if (!empty($idpMetadata['tags']) && !empty(array_intersect($idpMetadata['tags'], $this->idpTags))) {
             SimpleSAML_Logger::debug("[DynamicAssurance] IdP tag matches known value: " . var_export(array_intersect($idpMetadata['tags'], $this->idpTags), true));
-            $assurance = 'https://refeds.org/assurance/IAP/medium';
+            $assurance = 'https://www.example.org/medium';
         }
 
         if (!empty($state['Attributes']['eduPersonAssurance']) && !empty(array_intersect($state['Attributes']['eduPersonAssurance'], $this->idpPolicies))) {
             SimpleSAML_Logger::debug("[DynamicAssurance] Assurance matches known policy value: " . var_export(array_intersect($state['Attributes']['eduPersonAssurance'], $this->idpPolicies), true));
-            $assurance = 'https://refeds.org/assurance/IAP/medium';
+            $assurance = 'https://www.example.org/medium';
         }
 
         if (array_key_exists('eduPersonEntitlement', $state['Attributes']) && !empty(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->_entitlements))) {
             SimpleSAML_Logger::debug("[DynamicAssurance] Assurance matches known entitlement value: " . var_export(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->_entitlements), true));
-            $assurance = 'https://refeds.org/assu!rance/IAP/medium';
+            $assurance = 'https://www.example.org/medium';
         }
         
             $state['Attributes'][$this->_attribute] = array($assurance);

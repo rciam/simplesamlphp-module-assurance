@@ -2,7 +2,7 @@
 
 
 /**
- * Filter for saving the SP AuthnContextClassRef.
+ * Filter for saving the SP AuthnContextClassRef in the response.
  *
  * @package SimpleSAMLphp
  */
