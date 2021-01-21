@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Filter for saving the SP AuthnContextClassRef in the response.
  *
@@ -8,8 +7,6 @@
  */
 class sspmod_assurance_Auth_Process_SPAuthnContextClassRef extends SimpleSAML_Auth_ProcessingFilter
 {
-
-
     /**
      * Initialize this filter.
      *
@@ -24,7 +21,6 @@ class sspmod_assurance_Auth_Process_SPAuthnContextClassRef extends SimpleSAML_Au
         assert('is_array($config)');
 
     }
-
 
     /**
      * Save the AuthnContextClassRef in the SAML 2 response.

@@ -1,19 +1,32 @@
 <?php
 
-
 /**
  * Filter for setting the AuthnContextClassRef in the response based on the 
  * value of the supplied attribute.
- * 
  * Example configuration in metadata/saml20-idp-hosted.php:
  * 
  *      authproc = array(
  *          ...
  *          40 => array(
  *              'class' => 'assurance:DynamicAssurance',
- *              'entitlements' => array(
+ *              'attribute' => 'eduPersonAssurance',
+ *              'candidates' => array(
+ *                  'https://refeds.org/profile/sfa',
+ *                  'https://refeds.org/profile/mfa',
+ *              ),
+ *              'entitlementWhitelist' => array(
  *                  'urn:mace:www.example.org:entitlement01',
  *                  'urn:mace:www.example.org:entitlement02',
+ *              ),
+ *              'defaultAccurance' => 'https://example.org/LowAssurance',
+ *              'defaultElevatedAssurance' => 'https://example.org/HighAssurance',
+ *              'idpPolicies' => array(
+ *                  'example.org:policy01',
+ *                  'example.org:policy02',
+ *              ),
+ *              'idpTags' => array(
+ *                  'exampleTag01',
+ *                  'exampleTag02',
  *              ),
  *          ),
  *
@@ -35,18 +48,15 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         'https://refeds.org/profile/mfa',
     );
 
-    private $_default = 'https://www.example.org/low';
+    private $_defaultAccurance = 'https://www.example.org/low';
+    
+    private $_defaultElevatedAssurance = 'https://www.example.org/Substantial';
 
-    private $_entitlements;
+    private $_entitlementWhitelist = array();
 
-    private $idpPolicies = array(
-        '1.2.840.113612.5.2.2.1',
-        '1.2.840.113612.5.2.2.5',
-    );
+    private $idpPolicies = array();
 
-    private $idpTags = array(
-        'edugain',
-    );
+    private $idpTags = array();
 
     /**
      * Initialize this filter.
@@ -62,36 +72,40 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         assert('is_array($config)');
 
         if (array_key_exists('attribute', $config)) {
-            $this->_attribute = $config['attribute'];
             if (!is_string($this->_attribute)) {
                 throw new Exception('DynamicAssurance auth processing filter configuration error: \'attribute\' should be a string');
             }
+            $this->_attribute = $config['attribute'];
         }
 
         if (array_key_exists('candidates', $config)) {
-             $this->_candidates = $config['candidates'];
-             if (!is_array($this->_candidates)) {
-                 throw new Exception('DynamicAssurance auth processing filter configuration error: \'candidates\' should be an array');
-             }
+            if (!is_array($this->_candidates)) {
+                throw new Exception('DynamicAssurance auth processing filter configuration error: \'candidates\' should be an array');
+            }
+            $this->_candidates = $config['candidates'];
         }
 
-        if (array_key_exists('default', $config)) {
-            $this->_default = $config['default'];
-            if (!is_string($this->_default)) {
-                throw new Exception('DynamicAssurance auth processing filter configuration error: \'default\' should be a string');
+        if (array_key_exists('defaultAccurance', $config)) {
+            if (!is_string($this->_defaultAccurance)) {
+                throw new Exception('DynamicAssurance auth processing filter configuration error: \'defaultAccurance\' should be a string');
             }
+            $this->_defaultAccurance = $config['defaultAccurance'];
         }
 
-        if (array_key_exists('entitlements', $config)) {
-            $this->_entitlements = $config['entitlements'];
-            if (!is_array($this->_entitlements)) {
-                throw new Exception('DynamicAssurance auth processing filter configuration error: \'entitlements\' should be an array');
+        if (array_key_exists('defaultElevatedAssurance', $config)) {
+            if (!is_string($this->_defaultElevatedAssurance)) {
+                throw new Exception('DynamicAssurance auth processing filter configuration error: \'defaultElevatedAssurance\' should be a string');
             }
-        } else {
-            throw new Exception('DynamicAssurance auth processing filter configuration error: \'entitlements\' have not been set');
+            $this->_defaultElevatedAssurance = $config['defaultElevatedAssurance'];
+        }
+
+        if (array_key_exists('entitlementWhitelist', $config)) {
+            if (!is_array($this->_entitlementWhitelist)) {
+                throw new Exception('DynamicAssurance auth processing filter configuration error: \'entitlementWhitelist\' should be an array');
+            }
+            $this->_entitlementWhitelist = $config['entitlementWhitelist'];
         }
     }
-
 
     /**
      * Set the assurance in the SAML 2 response.
@@ -110,7 +124,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
             return;
         }
 
-        $assurance = $this->_default;
+        $assurance = $this->_defaultAccurance;
 
         // Elevate assurance?
         // If the module is active on a bridge,
@@ -124,19 +138,19 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         }
         if (!empty($idpMetadata['tags']) && !empty(array_intersect($idpMetadata['tags'], $this->idpTags))) {
             SimpleSAML_Logger::debug("[DynamicAssurance] IdP tag matches known value: " . var_export(array_intersect($idpMetadata['tags'], $this->idpTags), true));
-            $assurance = 'https://www.example.org/medium';
+            $assurance = $this->_defaultElevatedAssurance;
         }
 
         if (!empty($state['Attributes']['eduPersonAssurance']) && !empty(array_intersect($state['Attributes']['eduPersonAssurance'], $this->idpPolicies))) {
             SimpleSAML_Logger::debug("[DynamicAssurance] Assurance matches known policy value: " . var_export(array_intersect($state['Attributes']['eduPersonAssurance'], $this->idpPolicies), true));
-            $assurance = 'https://www.example.org/medium';
+            $assurance = $this->_defaultElevatedAssurance;
         }
 
-        if (array_key_exists('eduPersonEntitlement', $state['Attributes']) && !empty(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->_entitlements))) {
-            SimpleSAML_Logger::debug("[DynamicAssurance] Assurance matches known entitlement value: " . var_export(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->_entitlements), true));
-            $assurance = 'https://www.example.org/medium';
+        if (array_key_exists('eduPersonEntitlement', $state['Attributes']) && !empty(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->_entitlementWhitelist))) {
+            SimpleSAML_Logger::debug("[DynamicAssurance] Assurance matches known entitlement value: " . var_export(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->_entitlementWhitelist), true));
+            $assurance = $this->_defaultElevatedAssurance;
         }
         
-            $state['Attributes'][$this->_attribute] = array($assurance);
+        $state['Attributes'][$this->_attribute] = array($assurance);
     }
 }

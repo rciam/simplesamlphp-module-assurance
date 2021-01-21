@@ -13,10 +13,13 @@ The following classes are needed to configure, in order to execute the module.
 ### DynamicAssurance
 #### Configuration
 The following authproc filter configuration options are supported:
-  * `entitlements`: Required, an array of strings containing values that can get higher assurance.
+  * `entitlementWhitelist`: Required, an array of strings containing values that can get higher assurance.
   * `attribute`: Optional, a string that defines the name of the attribute that will store the value of LoA. Defaults to `eduPersonAssurance`.
   * `candidates`: Optional, an array of strings that contains the allowed LoA values.
-  * `default`: Optional, a string to use as the default value of LoA. Defaults to `https://www.example.org/low`.
+  * `defaultAssurance`: Optional, a string to use as the default value of LoA. Defaults to `https://www.example.org/low`.
+  * `defaultElevatedAssurance`: Optional, a string to use as the default value of LoA. Defaults to `https://www.example.org/Substantial`.
+  * `idpPolicies`: Optional, an array of stings that contains the allowed IdP Policies.
+  * `idpTags`: Optional, an array of stings that contains the allowed IdP Tags.
 
 #### Example
 This filter should be configured on IdP:
@@ -26,17 +29,32 @@ This filter should be configured on IdP:
         ...
         40 => array(
             'class' => 'assurance:DynamicAssurance',
-            'entitlements' => array(
+            'attribute' => 'eduPersonAssurance',
+            'candidates' => array(
+                'https://refeds.org/profile/sfa',
+                'https://refeds.org/profile/mfa',
+            ),
+            'entitlementWhitelist' => array(
                 'urn:mace:www.example.org:entitlement01',
                 'urn:mace:www.example.org:entitlement02',
             ),
-            'attribute' => 'assuranceAttribute'
+            'defaultAccurance' => 'https://example.org/LowAssurance',
+            'defaultElevatedAssurance' => 'https://example.org/HighAssurance',
+            'idpPolicies' => array(
+                'example.org:policy01',
+                'example.org:policy02',
+            ),
+            'idpTags' => array(
+                'exampleTag01',
+                'exampleTag02',
+            ),
         ),
 ```
 ### IdPAuthnContextClassRef
 #### Configuration
 The following authproc filter configuration options are supported:
   * `attribute`: Optional, a string, the name of the LoA attribute which will be added in the SAML response. Defaults to `eduPersonAssurance`. Note: Sould be the same value with the 'attribute' of `DynamicAssurance` class.
+  * `assuranceWhitelist`: Optional, an array of strings that contains the allowed LoA values.
 
 #### Example
 This filter should be configured on the IdP:
@@ -49,6 +67,10 @@ This filter should be configured on the IdP:
         41 => array(
             'class' => 'assurance:IdPAuthnContextClassRef',
             'attribute' => 'assuranceAttribute',
+            'assuranceWhitelist' => array(
+                'https://refeds.org/profile/sfa',
+                'https://refeds.org/profile/mfa',
+            ),
         ),
 ```
 ### SPAuthnContextClassRef

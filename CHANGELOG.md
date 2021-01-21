@@ -13,7 +13,7 @@ This version is compatible with [SimpleSAMLphp v1.14](https://simplesamlphp.org/
     - candidates
     - idpTags
     - idpPolicies
-    - entitlements
+    - entitlementWhitelist
 - IdPAuthnContextClassRef class
   - Saves the IdP AuthnContextClassRef in the SAML 2 response
 - SPAuthnContextClassRef class
