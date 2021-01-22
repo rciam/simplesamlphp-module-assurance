@@ -3,6 +3,11 @@
 /**
  * Filter for saving the IdP AuthnContextClassRef in the response based on the 
  * value of the supplied attribute.
+ * 
+ * This filter should be configured on the IdP:
+ * - Specific for only one hosted IdP in saml20-idp-hosted or shib13-idp-hosted
+ * - Specific for only one remote SP in saml20-sp-remote or shib13-sp-remote
+ * 
  * Example configuration in metadata/saml20-idp-hosted.php:
  * 
  *      authproc = array(
