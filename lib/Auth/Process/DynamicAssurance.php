@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Filter for setting the AuthnContextClassRef in the response based on the 
+ * Filter for setting the AuthnContextClassRef in the response based on the
  * value of the supplied attribute.
  * Example configuration in metadata/saml20-idp-hosted.php:
- * 
+ *
  *      authproc = array(
  *          ...
  *          40 => array(
@@ -18,7 +18,7 @@
  *                  'urn:mace:www.example.org:entitlement01',
  *                  'urn:mace:www.example.org:entitlement02',
  *              ),
- *              'defaultAccurance' => 'https://example.org/LowAssurance',
+ *              'defaultAssurance' => 'https://example.org/LowAssurance',
  *              'defaultElevatedAssurance' => 'https://example.org/HighAssurance',
  *              'idpPolicies' => array(
  *                  'example.org:policy01',
@@ -36,26 +36,44 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
 {
 
     /**
-     * The attribute whose value should convey the LoA in 
+     * The attribute whose value should convey the LoA in
      * the SAML assertion.
      *
      * @var string
      */
-    private $_attribute = 'eduPersonAssurance';
+    private $attribute = 'eduPersonAssurance';
 
-    private $_candidates = array(
+    /**
+     * @var string[]
+     */
+    private $candidates = array(
         'https://refeds.org/profile/sfa',
         'https://refeds.org/profile/mfa',
     );
 
-    private $_defaultAccurance = 'https://www.example.org/low';
-    
-    private $_defaultElevatedAssurance = 'https://www.example.org/Substantial';
+    /**
+     * @var string
+     */
+    private $defaultAssurance = 'https://www.example.org/low';
 
-    private $_entitlementWhitelist = array();
+    /**
+     * @var string
+     */
+    private $defaultElevatedAssurance = 'https://www.example.org/Substantial';
 
+    /**
+     * @var array
+     */
+    private $entitlementWhitelist = array();
+
+    /**
+     * @var array
+     */
     private $idpPolicies = array();
 
+    /**
+     * @var array
+     */
     private $idpTags = array();
 
     /**
@@ -118,13 +136,19 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         assert('array_key_exists("Attributes", $state)');
 
         // Return early if assurance matches one of the well known values
-        if (!empty($state['Attributes'][$this->_attribute]) &&       
-            !empty(array_intersect($state['Attributes'][$this->_attribute], $this->_candidates))) {
-            SimpleSAML_Logger::debug("[DynamicAssurance] Assurance matches known value: " . var_export(array_intersect($state['Attributes'][$this->_attribute], $this->_candidates), true));
+        // Candidates
+        if (
+            !empty($state['Attributes'][$this->attribute])
+            && !empty(array_intersect($state['Attributes'][$this->attribute], $this->candidates))
+        ) {
+            SimpleSAML_Logger::debug(
+                "[DynamicAssurance] Assurance matches known value: "
+                . var_export(array_intersect($state['Attributes'][$this->attribute], $this->candidates), true)
+            );
             return;
         }
 
-        $assurance = $this->_defaultAccurance;
+        $assurance = $this->defaultAssurance;
 
         // Elevate assurance?
         // If the module is active on a bridge,
@@ -136,21 +160,42 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
             $idpEntityId = $state['Source']['entityid'];
             $idpMetadata = $state['Source'];
         }
-        if (!empty($idpMetadata['tags']) && !empty(array_intersect($idpMetadata['tags'], $this->idpTags))) {
-            SimpleSAML_Logger::debug("[DynamicAssurance] IdP tag matches known value: " . var_export(array_intersect($idpMetadata['tags'], $this->idpTags), true));
-            $assurance = $this->_defaultElevatedAssurance;
+        // IdP Tags
+        if (
+            !empty($idpMetadata['tags'])
+            && !empty(array_intersect($idpMetadata['tags'], $this->idpTags))
+        ) {
+            SimpleSAML_Logger::debug(
+                "[DynamicAssurance] IdP tag matches known value: "
+                . var_export(array_intersect($idpMetadata['tags'], $this->idpTags), true)
+            );
+            $assurance = $this->defaultElevatedAssurance;
         }
 
-        if (!empty($state['Attributes']['eduPersonAssurance']) && !empty(array_intersect($state['Attributes']['eduPersonAssurance'], $this->idpPolicies))) {
-            SimpleSAML_Logger::debug("[DynamicAssurance] Assurance matches known policy value: " . var_export(array_intersect($state['Attributes']['eduPersonAssurance'], $this->idpPolicies), true));
-            $assurance = $this->_defaultElevatedAssurance;
+        // IdP Policies
+        if (
+            !empty($state['Attributes']['eduPersonAssurance'])
+            && !empty(array_intersect($state['Attributes']['eduPersonAssurance'], $this->idpPolicies))
+        ) {
+            SimpleSAML_Logger::debug(
+                "[DynamicAssurance] Assurance matches known policy value: "
+                . var_export(array_intersect($state['Attributes']['eduPersonAssurance'], $this->idpPolicies), true)
+            );
+            $assurance = $this->defaultElevatedAssurance;
         }
 
-        if (array_key_exists('eduPersonEntitlement', $state['Attributes']) && !empty(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->_entitlementWhitelist))) {
-            SimpleSAML_Logger::debug("[DynamicAssurance] Assurance matches known entitlement value: " . var_export(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->_entitlementWhitelist), true));
-            $assurance = $this->_defaultElevatedAssurance;
+        // Entitlements
+        if (
+            array_key_exists('eduPersonEntitlement', $state['Attributes'])
+            && !empty(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->entitlementWhitelist))
+        ) {
+            SimpleSAML_Logger::debug(
+                "[DynamicAssurance] Assurance matches known entitlement value: "
+                . var_export(array_intersect($state['Attributes']['eduPersonEntitlement'], $this->entitlementWhitelist), true)
+            );
+            $assurance = $this->defaultElevatedAssurance;
         }
-        
-        $state['Attributes'][$this->_attribute] = array($assurance);
+
+        $state['Attributes'][$this->attribute] = array($assurance);
     }
 }
