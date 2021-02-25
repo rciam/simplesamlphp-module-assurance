@@ -1,7 +1,7 @@
 # simplesamlphp-module-assurance
 A SimpleSAMLphp module for determining and indicating the Level of Assurance (LoA) of an authentication event.
 Specifically the module determines the LoA baced on:
-* `candidates`, if the represented LoA attribute of the authenticating user containes any value of the allowed values, then the module will skip execution.
+* `candidates`, if the represented LoA attribute of the authenticating user contains any value of the allowed values, then the module will skip execution.
 * `idpTags`, Identity Providers (IdPs) that are providing a higher level of assuranse for the authincating user can be marked, by adding the attribute `'tags' => array (0 => 'exampleTag',)` in the IdP's metadata in `saml20-idp-remote.php`.
 * `idpPolicies`, if the 'eduPersonAssurance' attribute of the authenticating user contains any value of this list, then the user will grand higher LoA.
 * `entitlements`, if the 'eduPersonEntitlement' attribute of the authenticating user contains any value of this list, then the user will grant higher LoA.
