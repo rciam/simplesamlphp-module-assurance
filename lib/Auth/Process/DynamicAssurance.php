@@ -77,6 +77,25 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
     private $idpTags = array();
 
     /**
+     * @var string[]
+     */
+    private $config_param_str = array(
+        'attribute',
+        'defaultAssurance',
+        'defaultElevatedAssurance',
+    );
+
+    /**
+     * @var string[]
+     */
+    private $config_param_array = array(
+        'candidates',
+        'entitlementWhitelist',
+        'idpTags',
+        'idpPolicies',
+    );
+
+    /**
      * Initialize this filter.
      *
      * @param array $config Configuration information about this filter.
@@ -89,39 +108,26 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         parent::__construct($config, $reserved);
         assert('is_array($config)');
 
-        if (array_key_exists('attribute', $config)) {
-            if (!is_string($this->_attribute)) {
-                throw new Exception('DynamicAssurance auth processing filter configuration error: \'attribute\' should be a string');
+        foreach ($this->config_param_str as $param) {
+            if (array_key_exists($param, $config)) {
+                $this->$param = $config[$param];
+                if (!is_string($this->$param)) {
+                    throw new Exception(
+                        "DynamicAssurance auth processing filter configuration error: '" . $param . "' should be a string"
+                    );
+                }
             }
-            $this->_attribute = $config['attribute'];
         }
 
-        if (array_key_exists('candidates', $config)) {
-            if (!is_array($this->_candidates)) {
-                throw new Exception('DynamicAssurance auth processing filter configuration error: \'candidates\' should be an array');
+        foreach ($this->config_param_array as $param) {
+            if (array_key_exists($param, $config)) {
+                $this->$param = $config[$param];
+                if (!is_array($this->$param)) {
+                    throw new Exception(
+                        "DynamicAssurance auth processing filter configuration error: '" . $param . "' should be a string"
+                    );
+                }
             }
-            $this->_candidates = $config['candidates'];
-        }
-
-        if (array_key_exists('defaultAccurance', $config)) {
-            if (!is_string($this->_defaultAccurance)) {
-                throw new Exception('DynamicAssurance auth processing filter configuration error: \'defaultAccurance\' should be a string');
-            }
-            $this->_defaultAccurance = $config['defaultAccurance'];
-        }
-
-        if (array_key_exists('defaultElevatedAssurance', $config)) {
-            if (!is_string($this->_defaultElevatedAssurance)) {
-                throw new Exception('DynamicAssurance auth processing filter configuration error: \'defaultElevatedAssurance\' should be a string');
-            }
-            $this->_defaultElevatedAssurance = $config['defaultElevatedAssurance'];
-        }
-
-        if (array_key_exists('entitlementWhitelist', $config)) {
-            if (!is_array($this->_entitlementWhitelist)) {
-                throw new Exception('DynamicAssurance auth processing filter configuration error: \'entitlementWhitelist\' should be an array');
-            }
-            $this->_entitlementWhitelist = $config['entitlementWhitelist'];
         }
     }
 

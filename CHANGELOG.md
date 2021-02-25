@@ -17,6 +17,7 @@ This version is compatible with [SimpleSAMLphp v1.14](https://simplesamlphp.org/
     - idpTags
     - idpPolicies
     - entitlementWhitelist
+  - Add dynamic initialization of configuration options
 - IdPAuthnContextClassRef class
   - Saves the IdP AuthnContextClassRef in the SAML 2 response
 - SPAuthnContextClassRef class
