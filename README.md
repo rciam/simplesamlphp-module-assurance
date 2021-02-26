@@ -99,7 +99,7 @@ This filter should be configured on the SP:
 This table matches the module version with the supported SimpleSAMLphp version.
 | Module |  SimpleSAMLphp |
 |:------:|:--------------:|
-| v1.0.0 | v1.14          |
+| v1.x   | v1.14          |
 
 ## License
 Licensed under the Apache 2.0 license, for details see `LICENSE`.
