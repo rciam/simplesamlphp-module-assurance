@@ -211,7 +211,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
             foreach ($preg_match as $key => $val) {
                 // These are the pass through values
                 if(is_string($val)) {
-                    $passthrough_values        = preg_grep($valAssuranceCandidates, $state['Attributes'][$attribute]);
+                    $passthrough_values        = preg_grep($val, $state['Attributes'][$attribute]);
                     if(!empty($passthrough_values)) {
                         $assurance_from_candidates = array_merge(
                             $assurance_from_candidates,
