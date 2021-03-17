@@ -1,54 +1,94 @@
 # simplesamlphp-module-assurance
 A SimpleSAMLphp module for determining and indicating the Level of Assurance (LoA) of an authentication event.
-Specifically the module determines the LoA baced on:
-* `candidates`, if the represented LoA attribute of the authenticating user contains any value of the allowed values, then the module will skip execution.
-* `idpTags`, Identity Providers (IdPs) that are providing a higher level of assuranse for the authincating user can be marked, by adding the attribute `'tags' => array (0 => 'exampleTag',)` in the IdP's metadata in `saml20-idp-remote.php`.
-* `idpPolicies`, if the 'eduPersonAssurance' attribute of the authenticating user contains any value of this list, then the user will grand higher LoA.
-* `entitlements`, if the 'eduPersonEntitlement' attribute of the authenticating user contains any value of this list, then the user will grant higher LoA.
 
 To this end, the LoA that the module will determine for the authnticating user, will be saved in the SAML 2 response.
 
 ## Module configuration
 The following classes are needed to configure, in order to execute the module.
 ### DynamicAssurance
+This filter evaluates the assurance values based on specific attribute mapping rules. The evaluation process can optionally take into account the tag(s) of the authenticating Identity Provider.
 #### Configuration
 The following authproc filter configuration options are supported:
-  * `entitlementWhitelist`: Required, an array of strings containing values that can get higher assurance.
-  * `attribute`: Optional, a string that defines the name of the attribute that will store the value of LoA. Defaults to `eduPersonAssurance`.
-  * `candidates`: Optional, an array of strings that contains the allowed LoA values.
-  * `defaultAssurance`: Optional, a string to use as the default value of LoA. Defaults to `https://www.example.org/low`.
-  * `defaultElevatedAssurance`: Optional, a string to use as the default value of LoA. Defaults to `https://www.example.org/Substantial`.
-  * `idpPolicies`: Optional, an array of stings that contains the allowed IdP Policies.
-  * `idpTags`: Optional, an array of stings that contains the allowed IdP Tags.
+  * `attribute`: _Optional_, a string that defines the name of the attribute that will store the value of LoA. Defaults to `eduPersonAssurance`.
+  * `attributeMap`: _Optional_,  a map whose keys identify attribute names whose values can be mapped to assurance values. For each identified attribute, you can specify an array of values that will be treated as literal strings for exact matching. It is also possible to use the `pregMatch` key for defining a list of regular expressions that will be matched against the attribute values. For each matching value, the filter appends the specified assurance values to the assurance attribute. Defaults to
+  ```php
+      $attributeMap = array(
+        'eduPersonAssurance' => array(
+            '1.2.840.113612.5.2.2.1' => array(                    // Classic
+                'https://refeds.org/assurance/IAP/low',
+                'https://refeds.org/assurance/IAP/medium',
+            ),
+            '1.2.840.113612.5.2.2.5' => array(                    // MICS
+                'https://refeds.org/assurance/IAP/low',
+                'https://refeds.org/assurance/IAP/medium',
+            ),
+            'pregMatch' => array(
+                '#^https://refeds\.org/assurance#m',                // REFEDS passthrough values
+                '#^https://aarc-community\.org/assurance#m',        // AARC passthrough values
+            ),
+        ),
+        'voPersonVerifiedEmail' => array(
+            'pregMatch' => array(
+                '/^.+$/m' => array(
+                    'https://refeds.org/assurance/IAP/low'
+                ),
+            ),
+        ),
+    );
+  ```
+  :warning: The configured Assurance Map array is merged recursively with the default one from above.
+  * `defaultAssurance`: _Optional_, an array containing assurance value(s) to set by default when no assurance information is available. Defaults to `array()`, i.e. no assurance values are added by default.
+  * `idpTagMap`: _Optional_, a map whose `keys` identify IdP Tags which can be mapped to assurance values. If the metadata of the user's authenticating IdP contain any of the specified tags, then the filter will append these values to the assurance attribute. Defaults to `array()`.
 
 #### Example
 This filter should be configured on IdP:
 - Specific for only one hosted IdP in `saml20-idp-hosted.php` or `shib13-idp-hosted.php`.
 ```
-    authproc = array(
-        ...
-        40 => array(
-            'class' => 'assurance:DynamicAssurance',
-            'attribute' => 'eduPersonAssurance',
-            'candidates' => array(
-                'https://refeds.org/profile/sfa',
-                'https://refeds.org/profile/mfa',
-            ),
-            'entitlementWhitelist' => array(
-                'urn:mace:www.example.org:entitlement01',
-                'urn:mace:www.example.org:entitlement02',
-            ),
-            'defaultAccurance' => 'https://example.org/LowAssurance',
-            'defaultElevatedAssurance' => 'https://example.org/HighAssurance',
-            'idpPolicies' => array(
-                'example.org:policy01',
-                'example.org:policy02',
-            ),
-            'idpTags' => array(
-                'exampleTag01',
-                'exampleTag02',
-            ),
-        ),
+     authproc = array(
+          ...
+          40 => array(
+              'class' => 'assurance:DynamicAssurance',
+              'attribute' => 'eduPersonAssurance',
+              'assuranceMap' => array(
+                  'eduPersonAssurance' => array(
+                      '1.2.840.113612.5.2.2.1' => array(                    // Classic
+                          'https://example.org/profile/Assurance/Low',
+                      ),
+                      '1.2.840.113612.5.2.2.5' => array(                    // MICS
+                          'https://example.org/profile/Assurance/High',
+                      ),
+                      'pregMatch' => array(
+                          '/^https:\/\/example\.org\/assurance/m',          // Pass Through values
+                      ),
+                  ),
+                  'eduPersonEntitlement' => array(
+                      'vo_test:IdP Proxy test' => array(
+                          'https://example.org/LoA#AssuranceHigh',
+                      ),
+                      'vo_test2:IdP Proxy test2' => array(
+                          'https://example.org/LoA#AssuranceLow',
+                      ),
+                  ),
+                  // The Attribute maps to an assurance level. All Assurance values must be underneath the key zero(0)
+                  'voPersonVerifiedEmail' => array(
+                      'pregMatch' => array(
+                          '/^.+$/m' => array(
+                              'https://example.org/LoA#AssuranceLow',
+                          ),
+                      ),
+                  ),
+              ),
+              'defaultAssurance' => 'https://example.org/LowAssurance',
+              'idpTagMap' => array(
+                  'exampleTag01' => array(
+                      'https://example.org/HighAssurance'
+                  ),
+                  'exampleTag02' => array(
+                      'https://example-other.org/HighAssurance'
+                  ),
+              ),
+          ),
+     )
 ```
 ### IdPAuthnContextClassRef
 #### Configuration
