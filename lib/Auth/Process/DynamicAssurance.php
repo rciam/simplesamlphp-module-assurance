@@ -44,6 +44,9 @@
  *              'defaultAssurance' => array(
  *                  'https://example.org/LowAssurance'
  *              ),
+ *              'minAssurance' => array(
+ *                  'https://example.org/LowAssurance'
+ *              ),
  *              'idpTagMap' => array(
  *                  'exampleTag01' => array(
  *                      'https://example.org/HighAssurance'
@@ -95,6 +98,11 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
     );
 
     /**
+     * @var array
+     */
+    private $minAssurance = array();
+
+    /**
      * @var string
      */
     private $defaultAssurance = array();
@@ -118,6 +126,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         'attributeMap',
         'idpTagMap',
         'defaultAssurance',
+        'minAssurance',
     );
 
     /**
@@ -264,12 +273,20 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
             "[DynamicAssurance][process] Assurance Values: " . var_export($assurance_from_candidates, true)
         );
 
+        // Check the required Assurance values
+        $append_default = true;
+        if(!empty($this->minAssurance)) {
+            $found_values = array_intersect($assurance_from_candidates, $this->minAssurance);
+            $append_default = !empty($found_values) ? false : true;
+        }
+
         // Append the Default Assurance if the Assurance list is empty
-        if(!empty($this->defaultAssurance)
-           && empty($assurance_from_candidates)) {
+        if((!empty($this->defaultAssurance) && $append_default)
+           || empty($assurance_from_candidates))
+        {
             $assurance_from_candidates = array_merge($assurance_from_candidates, $this->defaultAssurance);
         }
-        //  Remove any duplicates
+        // Remove any duplicates
         $assurance_from_candidates = array_unique($assurance_from_candidates);
         // Add Assurance into state
         if(!empty($assurance_from_candidates)) {
