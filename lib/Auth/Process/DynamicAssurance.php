@@ -118,14 +118,14 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
     /**
      * @var string[]
      */
-    private $config_param_str = array(
+    private $configParamStr = array(
         'attribute',
     );
 
     /**
      * @var string[]
      */
-    private $config_param_array = array(
+    private $configParamArray = array(
         'attributeMap',
         'idpTagMap',
         'defaultAssurance',
@@ -145,7 +145,7 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
         parent::__construct($config, $reserved);
         assert('is_array($config)');
 
-        foreach ($this->config_param_str as $param) {
+        foreach ($this->configParamStr as $param) {
             if (array_key_exists($param, $config)) {
                 $this->$param = $config[$param];
                 if (!is_string($this->$param)) {
@@ -156,7 +156,7 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
             }
         }
 
-        foreach ($this->config_param_array as $param) {
+        foreach ($this->configParamArray as $param) {
             if (array_key_exists($param, $config)) {
                 if (!empty($this->$param)) {
                     // If i have default values then merge with ones provided in the configuration
@@ -189,7 +189,7 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
         );
 
         // Append in the Assurance Attribute all the configured values
-        $assurance_from_candidates = array();
+        $assuranceFromCandidates = array();
         foreach ($this->attributeMap as $attribute => $valAssuranceCandidates) {
             // This attribute is not available in the state
             if (empty($state['Attributes'][$attribute])) {
@@ -203,38 +203,38 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
                 )
             );
 
-            $preg_match = array();
+            $pregMatch = array();
             // Check if there is a pregMatch key
             if(!empty($valAssuranceCandidates['pregMatch'])) {
-                $preg_match = $valAssuranceCandidates['pregMatch'];
+                $pregMatch = $valAssuranceCandidates['pregMatch'];
             }
 
             // Handle any State Attribute having an exact match into configuration
-            foreach ($state['Attributes'][$attribute] as $attribute_value) {
-                if (!empty($valAssuranceCandidates[$attribute_value])) {
-                    $assurance_from_candidates = array_merge(
-                        $assurance_from_candidates,
-                        $valAssuranceCandidates[$attribute_value]
+            foreach ($state['Attributes'][$attribute] as $attributeValue) {
+                if (!empty($valAssuranceCandidates[$attributeValue])) {
+                    $assuranceFromCandidates = array_merge(
+                        $assuranceFromCandidates,
+                        $valAssuranceCandidates[$attributeValue]
                     );
                 }
             }
 
             // Handle regex Match
-            foreach ($preg_match as $key => $val) {
+            foreach ($pregMatch as $key => $val) {
                 // These are the pass through values
                 if(is_string($val)) {
-                    $passthrough_values        = preg_grep($val, $state['Attributes'][$attribute]);
-                    if(!empty($passthrough_values)) {
-                        $assurance_from_candidates = array_merge(
-                            $assurance_from_candidates,
-                            $passthrough_values
+                    $passthroughValues        = preg_grep($val, $state['Attributes'][$attribute]);
+                    if(!empty($passthroughValues)) {
+                        $assuranceFromCandidates = array_merge(
+                            $assuranceFromCandidates,
+                            $passthroughValues
                         );
                     }
                 } elseif(is_array($val)) {  // Regex with list of Assurance values
-                    foreach ($state['Attributes'][$attribute] as $attribute_values) {
-                        if(preg_match($key, $attribute_values) === 1) {
-                            $assurance_from_candidates = array_merge(
-                                $assurance_from_candidates,
+                    foreach ($state['Attributes'][$attribute] as $attributeValues) {
+                        if(preg_match($key, $attributeValues) === 1) {
+                            $assuranceFromCandidates = array_merge(
+                                $assuranceFromCandidates,
                                 $val
                             );
                             break;
@@ -259,41 +259,41 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
             }
         }
 
-        foreach ($this->idpTagMap as $idpTag => $assurance_values) {
+        foreach ($this->idpTagMap as $idpTag => $assuranceValues) {
             if (in_array($idpTag, $idpMetadata['tags'])) {
-                if (!empty($assurance_values)) {
-                    $assurance_from_candidates = array_merge(
-                        $assurance_from_candidates,
-                        $assurance_values
+                if (!empty($assuranceValues)) {
+                    $assuranceFromCandidates = array_merge(
+                        $assuranceFromCandidates,
+                        $assuranceValues
                     );
                 }
             }
         }
 
-        $assurance_from_candidates = array_unique($assurance_from_candidates);
+        $assuranceFromCandidates = array_unique($assuranceFromCandidates);
 
         SimpleSAML\Logger::debug(
-            "[DynamicAssurance][process] Assurance Values: " . var_export($assurance_from_candidates, true)
+            "[DynamicAssurance][process] Assurance Values: " . var_export($assuranceFromCandidates, true)
         );
 
         // Check the required Assurance values
-        $append_default = true;
+        $appendDefault = true;
         if(!empty($this->minAssurance)) {
-            $found_values = array_intersect($assurance_from_candidates, $this->minAssurance);
-            $append_default = !empty($found_values) ? false : true;
+            $foundValues = array_intersect($assuranceFromCandidates, $this->minAssurance);
+            $appendDefault = !empty($foundValues) ? false : true;
         }
 
         // Append the Default Assurance if the Assurance list is empty
-        if((!empty($this->defaultAssurance) && $append_default)
-           || empty($assurance_from_candidates))
+        if((!empty($this->defaultAssurance) && $appendDefault)
+           || empty($assuranceFromCandidates))
         {
-            $assurance_from_candidates = array_merge($assurance_from_candidates, $this->defaultAssurance);
+            $assuranceFromCandidates = array_merge($assuranceFromCandidates, $this->defaultAssurance);
         }
         // Remove any duplicates
-        $assurance_from_candidates = array_unique($assurance_from_candidates);
+        $assuranceFromCandidates = array_unique($assuranceFromCandidates);
         // Add Assurance into state
-        if(!empty($assurance_from_candidates)) {
-            $state['Attributes'][$this->attribute] = $assurance_from_candidates;
+        if(!empty($assuranceFromCandidates)) {
+            $state['Attributes'][$this->attribute] = $assuranceFromCandidates;
         }
     }
 
