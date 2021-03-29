@@ -47,9 +47,9 @@ The following authproc filter configuration options are supported:
 
 :warning: The configured Assurance Map array is merged recursively with the default one from above.
 
-* `defaultAssurance`: _Optional_, an array containing assurance values to set by default when no assurance information is available or none of the required assurance values is present (see `minAssurance`). Defaults to `[]`, i.e. no assurance values are added by default.
-* `minAssurance`: _Optional_, an array containing required assurance values. Defaults to `[]`, i.e. no assurance values are required. When specified, at least one of the specified assurance values in the array MUST be present, otherwise the default assurance values will be assigned (see `defaultAssurance`).
-* `idpTagMap`: _Optional_, a map whose `keys` identify IdP Tags which can be mapped to assurance values. If the metadata of the user's authenticating IdP contain any of the specified tags, then the filter will append these values to the assurance attribute. Defaults to `[]`.
+* `defaultAssurance`: _Optional_, an array containing assurance values to set by default when no assurance information is available or none of the required assurance values is present (see `minAssurance`). No assurance values are added by default.
+* `minAssurance`: _Optional_, an array containing required assurance values. No assurance values are required. When specified, at least one of the specified assurance values in the array MUST be present, otherwise the default assurance values will be assigned (see `defaultAssurance`).
+* `idpTagMap`: _Optional_, a map whose `keys` identify IdP Tags which can be mapped to assurance values. If the metadata of the user's authenticating IdP contain any of the specified tags, then the filter will append these values to the assurance attribute.
 
 #### Example
 
