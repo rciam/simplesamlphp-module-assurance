@@ -2,16 +2,19 @@
 
 namespace SimpleSAML\Module\assurance\Auth\Process;
 
+use SimpleSAML\Auth\ProcessingFilter;
+use SimpleSAML\Error\Exception;
+
 /**
- * Filter for saving the IdP AuthnContextClassRef in the response based on the 
+ * Filter for saving the IdP AuthnContextClassRef in the response based on the
  * value of the supplied attribute.
- * 
+ *
  * This filter should be configured on the IdP:
  * - Specific for only one hosted IdP in saml20-idp-hosted or shib13-idp-hosted
  * - Specific for only one remote SP in saml20-sp-remote or shib13-sp-remote
- * 
+ *
  * Example configuration in metadata/saml20-idp-hosted.php:
- * 
+ *
  *      authproc = array(
  *          ...
  *          41 => array(
@@ -26,10 +29,10 @@ namespace SimpleSAML\Module\assurance\Auth\Process;
  *
  * @package SimpleSAMLphp
  */
-class IdPAuthnContextClassRef extends SimpleSAML\Auth\ProcessingFilter
+class IdPAuthnContextClassRef extends ProcessingFilter
 {
     /**
-     * The attribute whose value should be set as the AuthnContextClassRef in 
+     * The attribute whose value should be set as the AuthnContextClassRef in
      * the login response.
      *
      * @var string
@@ -52,13 +55,16 @@ class IdPAuthnContextClassRef extends SimpleSAML\Auth\ProcessingFilter
         assert('is_array($config)');
 
         if (!array_key_exists($config['attribute'])) {
-            throw new SimpleSAML\Error\Exception('Missing attribute option in processing filter.');
+            throw new Exception("Missing attribute option in processing filter.");
         }
         $this->attribute = (string) $config['attribute'];
 
         if (array_key_exists('assuranceWhitelist', $config)) {
             if (!is_array($this->assuranceWhitelist)) {
-                throw new Exception('DynamicAssurance auth processing filter configuration error: \'assuranceWhitelist\' should be an array');
+                throw new Exception(
+                    "DynamicAssurance auth processing filter configuration error: "
+                    . "'assuranceWhitelist' should be an array"
+                );
             }
             $this->assuranceWhitelist = $config['assuranceWhitelist'];
         }
@@ -74,7 +80,10 @@ class IdPAuthnContextClassRef extends SimpleSAML\Auth\ProcessingFilter
         assert('is_array($state)');
         assert('array_key_exists("Attributes", $state)');
 
-        if (array_key_exists($this->attribute, $state['Attributes']) && !empty(array_intersect($state['Attributes'][$this->attribute], $this->assuranceWhitelist))) {
+        if (
+            array_key_exists($this->attribute, $state['Attributes'])
+            && !empty(array_intersect($state['Attributes'][$this->attribute], $this->assuranceWhitelist))
+        ) {
             $authnContextClassRef = $state['Attributes'][$this->attribute][0];
         } elseif (!empty($state['Attributes']['sp:AuthnContext'])) {
             $authnContextClassRef = $state['Attributes']['sp:AuthnContext'][0];

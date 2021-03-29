@@ -2,6 +2,11 @@
 
 namespace SimpleSAML\Module\assurance\Auth\Process;
 
+use SimpleSAML\Auth\ProcessingFilter;
+use SimpleSAML\Error\Exception;
+use SimpleSAML\Logger;
+use SimpleSAML\Metadata\MetaDataStorageHandler;
+
 /**
  * Filter for setting the AuthnContextClassRef in the response based on the
  * value of the supplied attribute.
@@ -63,7 +68,7 @@ namespace SimpleSAML\Module\assurance\Auth\Process;
  *
  * @package SimpleSAMLphp
  */
-class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
+class DynamicAssurance extends ProcessingFilter
 {
     /**
      * The attribute whose value should convey the LoA in
@@ -150,7 +155,8 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
                 $this->$param = $config[$param];
                 if (!is_string($this->$param)) {
                     throw new Exception(
-                        "DynamicAssurance auth processing filter configuration error: '" . $param . "' should be a string"
+                        "DynamicAssurance auth processing filter configuration error: '"
+                        . $param . "' should be a string"
                     );
                 }
             }
@@ -167,7 +173,8 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
                 }
                 if (!is_array($this->$param)) {
                     throw new Exception(
-                        "DynamicAssurance auth processing filter configuration error: '" . $param . "' should be a string"
+                        "DynamicAssurance auth processing filter configuration error: '"
+                        . $param . "' should be a string"
                     );
                 }
             }
@@ -184,7 +191,7 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
         assert('is_array($state)');
         assert('array_key_exists("Attributes", $state)');
 
-        SimpleSAML\Logger::debug(
+        Logger::debug(
             "[DynamicAssurance][process] Assurance Map config: " . var_export($this->attributeMap, true)
         );
 
@@ -196,7 +203,7 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
                 continue;
             }
 
-            SimpleSAML\Logger::debug(
+            Logger::debug(
                 "[DynamicAssurance][process] state['Attributes']['" . $attribute . "']: " . var_export(
                     $state['Attributes'][$attribute],
                     true
@@ -205,7 +212,7 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
 
             $pregMatch = array();
             // Check if there is a pregMatch key
-            if(!empty($valAssuranceCandidates['pregMatch'])) {
+            if (!empty($valAssuranceCandidates['pregMatch'])) {
                 $pregMatch = $valAssuranceCandidates['pregMatch'];
             }
 
@@ -222,17 +229,17 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
             // Handle regex Match
             foreach ($pregMatch as $key => $val) {
                 // These are the pass through values
-                if(is_string($val)) {
+                if (is_string($val)) {
                     $passthroughValues        = preg_grep($val, $state['Attributes'][$attribute]);
-                    if(!empty($passthroughValues)) {
+                    if (!empty($passthroughValues)) {
                         $assuranceFromCandidates = array_merge(
                             $assuranceFromCandidates,
                             $passthroughValues
                         );
                     }
-                } elseif(is_array($val)) {  // Regex with list of Assurance values
+                } elseif (is_array($val)) {  // Regex with list of Assurance values
                     foreach ($state['Attributes'][$attribute] as $attributeValues) {
-                        if(preg_match($key, $attributeValues) === 1) {
+                        if (preg_match($key, $attributeValues) === 1) {
                             $assuranceFromCandidates = array_merge(
                                 $assuranceFromCandidates,
                                 $val
@@ -249,7 +256,7 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
         if (!empty($this->idpTagMap)) {
             if (!empty($state['saml:sp:IdP'])) {
                 $idpEntityId = $state['saml:sp:IdP'];
-                $idpMetadata = SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler()->getMetaData(
+                $idpMetadata = MetaDataStorageHandler::getMetadataHandler()->getMetaData(
                     $idpEntityId,
                     'saml20-idp-remote'
                 );
@@ -272,29 +279,29 @@ class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
 
         $assuranceFromCandidates = array_unique($assuranceFromCandidates);
 
-        SimpleSAML\Logger::debug(
+        Logger::debug(
             "[DynamicAssurance][process] Assurance Values: " . var_export($assuranceFromCandidates, true)
         );
 
         // Check the required Assurance values
         $appendDefault = true;
-        if(!empty($this->minAssurance)) {
+        if (!empty($this->minAssurance)) {
             $foundValues = array_intersect($assuranceFromCandidates, $this->minAssurance);
             $appendDefault = !empty($foundValues) ? false : true;
         }
 
         // Append the Default Assurance if the Assurance list is empty
-        if((!empty($this->defaultAssurance) && $appendDefault)
-           || empty($assuranceFromCandidates))
-        {
+        if (
+            (!empty($this->defaultAssurance) && $appendDefault)
+            || empty($assuranceFromCandidates)
+        ) {
             $assuranceFromCandidates = array_merge($assuranceFromCandidates, $this->defaultAssurance);
         }
         // Remove any duplicates
         $assuranceFromCandidates = array_unique($assuranceFromCandidates);
         // Add Assurance into state
-        if(!empty($assuranceFromCandidates)) {
+        if (!empty($assuranceFromCandidates)) {
             $state['Attributes'][$this->attribute] = $assuranceFromCandidates;
         }
     }
-
 }

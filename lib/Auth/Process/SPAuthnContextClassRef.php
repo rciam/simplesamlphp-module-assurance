@@ -2,12 +2,14 @@
 
 namespace SimpleSAML\Module\assurance\Auth\Process;
 
+use SimpleSAML\Auth\ProcessingFilter;
+
 /**
  * Filter for saving the SP AuthnContextClassRef in the response.
  *
  * @package SimpleSAMLphp
  */
-class SPAuthnContextClassRef extends SimpleSAML\Auth\ProcessingFilter
+class SPAuthnContextClassRef extends ProcessingFilter
 {
     /**
      * Initialize this filter.
@@ -21,7 +23,6 @@ class SPAuthnContextClassRef extends SimpleSAML\Auth\ProcessingFilter
     {
         parent::__construct($config, $reserved);
         assert('is_array($config)');
-
     }
 
     /**
