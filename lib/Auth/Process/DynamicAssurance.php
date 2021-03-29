@@ -12,59 +12,58 @@ use SimpleSAML\Metadata\MetaDataStorageHandler;
  * value of the supplied attribute.
  * Example configuration in metadata/saml20-idp-hosted.php:
  *
- *     authproc = array(
+ *     authproc = [
  *          ...
- *          40 => array(
+ *          40 => [
  *              'class' => 'assurance:DynamicAssurance',
  *              'attribute' => 'eduPersonAssurance',
- *              'attributeMap' => array(
- *                  'eduPersonAssurance' => array(
- *                      '1.2.840.113612.5.2.2.1' => array(                      // Classic
+ *              'attributeMap' => [
+ *                  'eduPersonAssurance' => [
+ *                      '1.2.840.113612.5.2.2.1' => [ // Classic
  *                          'https://refeds.org/assurance/IAP/low',
  *                          'https://refeds.org/assurance/IAP/medium',
  *                          'https://example.org/profile/Assurance/Low',
- *                      ),
- *                      '1.2.840.113612.5.2.2.5' => array(                      // MICS
+ *                      ],
+ *                      '1.2.840.113612.5.2.2.5' => [ // MICS
  *                          'https://refeds.org/assurance/IAP/low',
  *                          'https://refeds.org/assurance/IAP/medium',
  *                          'https://example.org/profile/Assurance/High',
- *                      ),
- *                      'pregMatch' => array(
- *                          '#^https://example\.org/assurance#m',               // Pass Through values
- *                      ),
- *                  ),
- *                  'eduPersonEntitlement' => array(
- *                      'vo_test:IdP Proxy test' => array(
+ *                      ],
+ *                      'pregMatch' => [
+ *                          '#^https://example\.org/assurance#m', // Pass Through values
+ *                      ],
+ *                  ],
+ *                  'eduPersonEntitlement' => [
+ *                      'vo_test:IdP Proxy test' => [
  *                          'https://example.org/LoA#AssuranceHigh',
- *                      ),
- *                      'vo_test2:IdP Proxy test2' => array(
+ *                      ],
+ *                      'vo_test2:IdP Proxy test2' => [
  *                          'https://example.org/LoA#AssuranceLow',
- *                      ),
- *                  ),
- *                  'voPersonVerifiedEmail' => array(
- *                      'pregMatch' => array(
- *                          '/^.+$/m' => array(
+ *                      ],
+ *                  ],
+ *                  'voPersonVerifiedEmail' => [
+ *                      'pregMatch' => [
+ *                          '/^.+$/m' => [
  *                              'https://example.org/LoA#AssuranceLow',
- *                          ),
- *                      ),
- *                  ),
- *              ),
- *              'defaultAssurance' => array(
+ *                          ],
+ *                      ],
+ *                  ],
+ *              ],
+ *              'defaultAssurance' => [
  *                  'https://example.org/LowAssurance'
- *              ),
- *              'minAssurance' => array(
+ *              ],
+ *              'minAssurance' => [
  *                  'https://example.org/LowAssurance'
- *              ),
- *              'idpTagMap' => array(
- *                  'exampleTag01' => array(
+ *              ],
+ *              'idpTagMap' => [
+ *                  'exampleTag01' => [
  *                      'https://example.org/HighAssurance'
- *                  ),
- *                  'exampleTag02' => array(
+ *                  ],
+ *                  'exampleTag02' => [
  *                      'https://example-other.org/HighAssurance'
- *                  ),
- *              ),
- *          ),
- *     )
+ *                  ],
+ *              ],
+ *          ],
  *
  * @package SimpleSAMLphp
  */
@@ -81,61 +80,61 @@ class DynamicAssurance extends ProcessingFilter
     /**
      * @var array[]
      */
-    private $attributeMap = array(
-        'eduPersonAssurance' => array(
-            '1.2.840.113612.5.2.2.1' => array(                      // Classic
+    private $attributeMap = [
+        'eduPersonAssurance' => [
+            '1.2.840.113612.5.2.2.1' => [ // Classic
                 'https://refeds.org/assurance/IAP/low',
                 'https://refeds.org/assurance/IAP/medium',
-            ),
-            '1.2.840.113612.5.2.2.5' => array(                      // MICS
+            ],
+            '1.2.840.113612.5.2.2.5' => [ // MICS
                 'https://refeds.org/assurance/IAP/low',
                 'https://refeds.org/assurance/IAP/medium',
-            ),
-            'pregMatch' => array(
-                '#^https://refeds\.org/assurance#m',                // REFEDS passthrough values
-                '#^https://aarc-community\.org/assurance#m',        // AARC passthrough values
-            ),
-        ),
-        'voPersonVerifiedEmail' => array(
-            'pregMatch' => array(
-                '/^.+$/m' => array(
+            ],
+            'pregMatch' => [
+                '#^https://refeds\.org/assurance#m', // REFEDS passthrough values
+                '#^https://aarc-community\.org/assurance#m', // AARC passthrough values
+            ],
+        ],
+        'voPersonVerifiedEmail' => [
+            'pregMatch' => [
+                '/^.+$/m' => [
                     'https://refeds.org/assurance/IAP/low'
-                ),
-            ),
-        ),
-    );
+                ],
+            ],
+        ],
+    ];
 
     /**
      * @var array
      */
-    private $minAssurance = array();
+    private $minAssurance = [];
 
     /**
      * @var string
      */
-    private $defaultAssurance = array();
+    private $defaultAssurance = [];
 
     /**
      * @var array
      */
-    private $idpTagMap = array();
+    private $idpTagMap = [];
 
     /**
      * @var string[]
      */
-    private $configParamStr = array(
+    private $configParamStr = [
         'attribute',
-    );
+    ];
 
     /**
      * @var string[]
      */
-    private $configParamArray = array(
+    private $configParamArray = [
         'attributeMap',
         'idpTagMap',
         'defaultAssurance',
         'minAssurance',
-    );
+    ];
 
     /**
      * Initialize this filter.
@@ -196,7 +195,7 @@ class DynamicAssurance extends ProcessingFilter
         );
 
         // Append in the Assurance Attribute all the configured values
-        $assuranceFromCandidates = array();
+        $assuranceFromCandidates = [];
         foreach ($this->attributeMap as $attribute => $valAssuranceCandidates) {
             // This attribute is not available in the state
             if (empty($state['Attributes'][$attribute])) {
@@ -210,7 +209,7 @@ class DynamicAssurance extends ProcessingFilter
                 )
             );
 
-            $pregMatch = array();
+            $pregMatch = [];
             // Check if there is a pregMatch key
             if (!empty($valAssuranceCandidates['pregMatch'])) {
                 $pregMatch = $valAssuranceCandidates['pregMatch'];
@@ -230,7 +229,7 @@ class DynamicAssurance extends ProcessingFilter
             foreach ($pregMatch as $key => $val) {
                 // These are the pass through values
                 if (is_string($val)) {
-                    $passthroughValues        = preg_grep($val, $state['Attributes'][$attribute]);
+                    $passthroughValues = preg_grep($val, $state['Attributes'][$attribute]);
                     if (!empty($passthroughValues)) {
                         $assuranceFromCandidates = array_merge(
                             $assuranceFromCandidates,

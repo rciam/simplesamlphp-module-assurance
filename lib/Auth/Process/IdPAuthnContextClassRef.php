@@ -15,16 +15,16 @@ use SimpleSAML\Error\Exception;
  *
  * Example configuration in metadata/saml20-idp-hosted.php:
  *
- *      authproc = array(
+ *      authproc = [
  *          ...
- *          41 => array(
+ *          41 => [
  *              'class' => 'assurance:IdPAuthnContextClassRef',
  *              'attribute' => 'eduPersonAssurance',
- *              'assuranceWhitelist' = array(
+ *              'assuranceWhitelist' = [
  *                  'https://refeds.org/profile/sfa',
  *                  'https://refeds.org/profile/mfa',
- *              ),
- *          ),
+ *              ],
+ *          ],
  *
  *
  * @package SimpleSAMLphp
@@ -39,7 +39,7 @@ class IdPAuthnContextClassRef extends ProcessingFilter
      */
     private $attribute;
 
-    private $assuranceWhitelist = array();
+    private $assuranceWhitelist = [];
 
     /**
      * Initialize this filter.

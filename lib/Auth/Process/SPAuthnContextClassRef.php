@@ -36,7 +36,7 @@ class SPAuthnContextClassRef extends ProcessingFilter
         assert('array_key_exists("Attributes", $state)');
 
         if (!empty($state['saml:sp:State']['saml:sp:AuthnContext'])) {
-            $state['Attributes']['sp:AuthnContext'] = array($state['saml:sp:State']['saml:sp:AuthnContext']);
+            $state['Attributes']['sp:AuthnContext'] = [$state['saml:sp:State']['saml:sp:AuthnContext']];
         }
 
         return;
