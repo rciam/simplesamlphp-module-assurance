@@ -139,8 +139,8 @@ class DynamicAssurance extends ProcessingFilter
     /**
      * Initialize this filter.
      *
-     * @param   array  $config    Configuration information about this filter.
-     * @param   mixed  $reserved  For future use.
+     * @param array $config   Configuration information about this filter.
+     * @param mixed $reserved For future use.
      *
      * @throws SimpleSAML\Error\Exception if the mandatory 'attribute' option is missing.
      */
@@ -236,7 +236,7 @@ class DynamicAssurance extends ProcessingFilter
                             $passthroughValues
                         );
                     }
-                } elseif (is_array($val)) {  // Regex with list of Assurance values
+                } elseif (is_array($val)) { // Regex with list of Assurance values
                     foreach ($state['Attributes'][$attribute] as $attributeValues) {
                         if (preg_match($key, $attributeValues) === 1) {
                             $assuranceFromCandidates = array_merge(

@@ -2,7 +2,7 @@
 
 A SimpleSAMLphp module for determining and indicating the Level of Assurance (LoA) of an authentication event.
 
-To this end, the LoA that the module will determine for the authnticating user, will be saved in the SAML 2 response.
+To this end, the LoA that the module will determine for the authenticating user, will be saved in the SAML 2 response.
 
 ## Module configuration
 
@@ -17,7 +17,7 @@ This filter evaluates the assurance values based on specific attribute mapping r
 The following authproc filter configuration options are supported:
 
 * `attribute`: _Optional_, a string that defines the name of the attribute that will store the value of LoA. Defaults to `eduPersonAssurance`.
-* `attributeMap`: _Optional_,  a map whose keys identify attribute names whose values can be mapped to assurance values. For each identified attribute, you can specify an array of values that will be treated as literal strings for exact matching. It is also possible to use the `pregMatch` key for defining a list of regular expressions that will be matched against the attribute values. For each matching value, the filter appends the specified assurance values to the assurance attribute. Defaults to
+* `attributeMap`: _Optional_, a map whose keys identify attribute names whose values can be mapped to assurance values. For each identified attribute, you can specify an array of values that will be treated as literal strings for exact matching. It is also possible to use the `pregMatch` key for defining a list of regular expressions that will be matched against the attribute values. For each matching value, the filter appends the specified assurance values to the assurance attribute. Defaults to
 
 ```php
     $attributeMap = [
@@ -65,14 +65,14 @@ This filter should be configured on IdP:
             'attribute' => 'eduPersonAssurance',
             'assuranceMap' => [
                 'eduPersonAssurance' => [
-                    '1.2.840.113612.5.2.2.1' => [                    // Classic
+                    '1.2.840.113612.5.2.2.1' => [ // Classic
                         'https://example.org/profile/Assurance/Low',
                     ],
-                    '1.2.840.113612.5.2.2.5' => [                    // MICS
+                    '1.2.840.113612.5.2.2.5' => [ // MICS
                         'https://example.org/profile/Assurance/High',
                     ],
                     'pregMatch' => [
-                        '/^https:\/\/example\.org\/assurance/m',          // Pass Through values
+                        '/^https:\/\/example\.org\/assurance/m', // Pass Through values
                     ],
                 ],
                 'eduPersonEntitlement' => [
