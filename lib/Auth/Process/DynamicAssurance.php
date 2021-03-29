@@ -1,4 +1,7 @@
 <?php
+
+namespace SimpleSAML\Module\assurance\Auth\Process;
+
 /**
  * Filter for setting the AuthnContextClassRef in the response based on the
  * value of the supplied attribute.
@@ -60,7 +63,7 @@
  *
  * @package SimpleSAMLphp
  */
-class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_ProcessingFilter
+class DynamicAssurance extends SimpleSAML\Auth\ProcessingFilter
 {
     /**
      * The attribute whose value should convey the LoA in
@@ -135,7 +138,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
      * @param   array  $config    Configuration information about this filter.
      * @param   mixed  $reserved  For future use.
      *
-     * @throws SimpleSAML_Error_Exception if the mandatory 'attribute' option is missing.
+     * @throws SimpleSAML\Error\Exception if the mandatory 'attribute' option is missing.
      */
     public function __construct($config, $reserved)
     {
@@ -181,7 +184,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         assert('is_array($state)');
         assert('array_key_exists("Attributes", $state)');
 
-        SimpleSAML_Logger::debug(
+        SimpleSAML\Logger::debug(
             "[DynamicAssurance][process] Assurance Map config: " . var_export($this->attributeMap, true)
         );
 
@@ -193,7 +196,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
                 continue;
             }
 
-            SimpleSAML_Logger::debug(
+            SimpleSAML\Logger::debug(
                 "[DynamicAssurance][process] state['Attributes']['" . $attribute . "']: " . var_export(
                     $state['Attributes'][$attribute],
                     true
@@ -246,7 +249,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         if (!empty($this->idpTagMap)) {
             if (!empty($state['saml:sp:IdP'])) {
                 $idpEntityId = $state['saml:sp:IdP'];
-                $idpMetadata = SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler()->getMetaData(
+                $idpMetadata = SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler()->getMetaData(
                     $idpEntityId,
                     'saml20-idp-remote'
                 );
@@ -269,7 +272,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
 
         $assurance_from_candidates = array_unique($assurance_from_candidates);
 
-        SimpleSAML_Logger::debug(
+        SimpleSAML\Logger::debug(
             "[DynamicAssurance][process] Assurance Values: " . var_export($assurance_from_candidates, true)
         );
 

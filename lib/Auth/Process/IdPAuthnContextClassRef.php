@@ -1,5 +1,7 @@
 <?php
 
+namespace SimpleSAML\Module\assurance\Auth\Process;
+
 /**
  * Filter for saving the IdP AuthnContextClassRef in the response based on the 
  * value of the supplied attribute.
@@ -24,7 +26,7 @@
  *
  * @package SimpleSAMLphp
  */
-class sspmod_assurance_Auth_Process_IdPAuthnContextClassRef extends SimpleSAML_Auth_ProcessingFilter
+class IdPAuthnContextClassRef extends SimpleSAML\Auth\ProcessingFilter
 {
     /**
      * The attribute whose value should be set as the AuthnContextClassRef in 
@@ -42,7 +44,7 @@ class sspmod_assurance_Auth_Process_IdPAuthnContextClassRef extends SimpleSAML_A
      * @param array $config Configuration information about this filter.
      * @param mixed $reserved For future use.
      *
-     * @throws SimpleSAML_Error_Exception if the mandatory 'attribute' option is missing.
+     * @throws SimpleSAML\Error\Exception if the mandatory 'attribute' option is missing.
      */
     public function __construct($config, $reserved)
     {
@@ -50,7 +52,7 @@ class sspmod_assurance_Auth_Process_IdPAuthnContextClassRef extends SimpleSAML_A
         assert('is_array($config)');
 
         if (!array_key_exists($config['attribute'])) {
-            throw new SimpleSAML_Error_Exception('Missing attribute option in processing filter.');
+            throw new SimpleSAML\Error\Exception('Missing attribute option in processing filter.');
         }
         $this->attribute = (string) $config['attribute'];
 
