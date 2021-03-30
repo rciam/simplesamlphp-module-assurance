@@ -13,13 +13,15 @@ This version is compatible with [SimpleSAMLphp v1.17](https://simplesamlphp.org/
 
 - Comply to [PSR-4: Autoloader](https://www.php-fig.org/psr/psr-4/) guidelines
 - Comply to [PSR-1: Basic Coding Standard](https://www.php-fig.org/psr/psr-1/) guidelines
-- Comply to [PSR-12: Extended Coding Style](https://www.php-fig.org/psr/psr-12/) guidelines
+- Comply to [PSR-12: Extended Coding Style](https://www.php-fig.org/psr/psr-12/)
+  guidelines
 
 ## [v1.0.2] - 2021-03-23
 
 ### Added
 
-- Support for specifying a list of assurance values (`minAssurance` config option), one of which MUST be present in the evaluated assurance attribute
+- Support for specifying a list of assurance values (`minAssurance` config
+  option), one of which MUST be present in the evaluated assurance attribute
 
 ## [v1.0.1] - 2021-03-17
 
