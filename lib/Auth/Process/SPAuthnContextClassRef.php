@@ -1,11 +1,15 @@
 <?php
 
+namespace SimpleSAML\Module\assurance\Auth\Process;
+
+use SimpleSAML\Auth\ProcessingFilter;
+
 /**
  * Filter for saving the SP AuthnContextClassRef in the response.
  *
  * @package SimpleSAMLphp
  */
-class sspmod_assurance_Auth_Process_SPAuthnContextClassRef extends SimpleSAML_Auth_ProcessingFilter
+class SPAuthnContextClassRef extends ProcessingFilter
 {
     /**
      * Initialize this filter.
@@ -13,13 +17,12 @@ class sspmod_assurance_Auth_Process_SPAuthnContextClassRef extends SimpleSAML_Au
      * @param array $config Configuration information about this filter.
      * @param mixed $reserved For future use.
      *
-     * @throws SimpleSAML_Error_Exception if the mandatory 'attribute' option is missing.
+     * @throws SimpleSAML\Error\Exception if the mandatory 'attribute' option is missing.
      */
     public function __construct($config, $reserved)
     {
         parent::__construct($config, $reserved);
         assert('is_array($config)');
-
     }
 
     /**
@@ -33,7 +36,7 @@ class sspmod_assurance_Auth_Process_SPAuthnContextClassRef extends SimpleSAML_Au
         assert('array_key_exists("Attributes", $state)');
 
         if (!empty($state['saml:sp:State']['saml:sp:AuthnContext'])) {
-            $state['Attributes']['sp:AuthnContext'] = array($state['saml:sp:State']['saml:sp:AuthnContext']);
+            $state['Attributes']['sp:AuthnContext'] = [$state['saml:sp:State']['saml:sp:AuthnContext']];
         }
 
         return;
