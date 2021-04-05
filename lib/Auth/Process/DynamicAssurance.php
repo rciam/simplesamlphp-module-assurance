@@ -1,66 +1,73 @@
 <?php
+
+namespace SimpleSAML\Module\assurance\Auth\Process;
+
+use SimpleSAML\Auth\ProcessingFilter;
+use SimpleSAML\Error\Exception;
+use SimpleSAML\Logger;
+use SimpleSAML\Metadata\MetaDataStorageHandler;
+
 /**
  * Filter for setting the AuthnContextClassRef in the response based on the
  * value of the supplied attribute.
  * Example configuration in metadata/saml20-idp-hosted.php:
  *
- *     authproc = array(
+ *     authproc = [
  *          ...
- *          40 => array(
+ *          40 => [
  *              'class' => 'assurance:DynamicAssurance',
  *              'attribute' => 'eduPersonAssurance',
- *              'attributeMap' => array(
- *                  'eduPersonAssurance' => array(
- *                      '1.2.840.113612.5.2.2.1' => array(                      // Classic
+ *              'attributeMap' => [
+ *                  'eduPersonAssurance' => [
+ *                      '1.2.840.113612.5.2.2.1' => [ // Classic
  *                          'https://refeds.org/assurance/IAP/low',
  *                          'https://refeds.org/assurance/IAP/medium',
  *                          'https://example.org/profile/Assurance/Low',
- *                      ),
- *                      '1.2.840.113612.5.2.2.5' => array(                      // MICS
+ *                      ],
+ *                      '1.2.840.113612.5.2.2.5' => [ // MICS
  *                          'https://refeds.org/assurance/IAP/low',
  *                          'https://refeds.org/assurance/IAP/medium',
  *                          'https://example.org/profile/Assurance/High',
- *                      ),
- *                      'pregMatch' => array(
- *                          '#^https://example\.org/assurance#m',               // Pass Through values
- *                      ),
- *                  ),
- *                  'eduPersonEntitlement' => array(
- *                      'vo_test:IdP Proxy test' => array(
+ *                      ],
+ *                      'pregMatch' => [
+ *                          '#^https://example\.org/assurance#m', // Pass Through values
+ *                      ],
+ *                  ],
+ *                  'eduPersonEntitlement' => [
+ *                      'vo_test:IdP Proxy test' => [
  *                          'https://example.org/LoA#AssuranceHigh',
- *                      ),
- *                      'vo_test2:IdP Proxy test2' => array(
+ *                      ],
+ *                      'vo_test2:IdP Proxy test2' => [
  *                          'https://example.org/LoA#AssuranceLow',
- *                      ),
- *                  ),
- *                  'voPersonVerifiedEmail' => array(
- *                      'pregMatch' => array(
- *                          '/^.+$/m' => array(
+ *                      ],
+ *                  ],
+ *                  'voPersonVerifiedEmail' => [
+ *                      'pregMatch' => [
+ *                          '/^.+$/m' => [
  *                              'https://example.org/LoA#AssuranceLow',
- *                          ),
- *                      ),
- *                  ),
- *              ),
- *              'defaultAssurance' => array(
+ *                          ],
+ *                      ],
+ *                  ],
+ *              ],
+ *              'defaultAssurance' => [
  *                  'https://example.org/LowAssurance'
- *              ),
- *              'minAssurance' => array(
+ *              ],
+ *              'minAssurance' => [
  *                  'https://example.org/LowAssurance'
- *              ),
- *              'idpTagMap' => array(
- *                  'exampleTag01' => array(
+ *              ],
+ *              'idpTagMap' => [
+ *                  'exampleTag01' => [
  *                      'https://example.org/HighAssurance'
- *                  ),
- *                  'exampleTag02' => array(
+ *                  ],
+ *                  'exampleTag02' => [
  *                      'https://example-other.org/HighAssurance'
- *                  ),
- *              ),
- *          ),
- *     )
+ *                  ],
+ *              ],
+ *          ],
  *
  * @package SimpleSAMLphp
  */
-class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_ProcessingFilter
+class DynamicAssurance extends ProcessingFilter
 {
     /**
      * The attribute whose value should convey the LoA in
@@ -73,87 +80,88 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
     /**
      * @var array[]
      */
-    private $attributeMap = array(
-        'eduPersonAssurance' => array(
-            '1.2.840.113612.5.2.2.1' => array(                      // Classic
+    private $attributeMap = [
+        'eduPersonAssurance' => [
+            '1.2.840.113612.5.2.2.1' => [ // Classic
                 'https://refeds.org/assurance/IAP/low',
                 'https://refeds.org/assurance/IAP/medium',
-            ),
-            '1.2.840.113612.5.2.2.5' => array(                      // MICS
+            ],
+            '1.2.840.113612.5.2.2.5' => [ // MICS
                 'https://refeds.org/assurance/IAP/low',
                 'https://refeds.org/assurance/IAP/medium',
-            ),
-            'pregMatch' => array(
-                '#^https://refeds\.org/assurance#m',                // REFEDS passthrough values
-                '#^https://aarc-community\.org/assurance#m',        // AARC passthrough values
-            ),
-        ),
-        'voPersonVerifiedEmail' => array(
-            'pregMatch' => array(
-                '/^.+$/m' => array(
+            ],
+            'pregMatch' => [
+                '#^https://refeds\.org/assurance#m', // REFEDS passthrough values
+                '#^https://aarc-community\.org/assurance#m', // AARC passthrough values
+            ],
+        ],
+        'voPersonVerifiedEmail' => [
+            'pregMatch' => [
+                '/^.+$/m' => [
                     'https://refeds.org/assurance/IAP/low'
-                ),
-            ),
-        ),
-    );
+                ],
+            ],
+        ],
+    ];
 
     /**
      * @var array
      */
-    private $minAssurance = array();
+    private $minAssurance = [];
 
     /**
      * @var string
      */
-    private $defaultAssurance = array();
+    private $defaultAssurance = [];
 
     /**
      * @var array
      */
-    private $idpTagMap = array();
+    private $idpTagMap = [];
 
     /**
      * @var string[]
      */
-    private $config_param_str = array(
+    private $configParamStr = [
         'attribute',
-    );
+    ];
 
     /**
      * @var string[]
      */
-    private $config_param_array = array(
+    private $configParamArray = [
         'attributeMap',
         'idpTagMap',
         'defaultAssurance',
         'minAssurance',
-    );
+    ];
 
     /**
      * Initialize this filter.
      *
-     * @param   array  $config    Configuration information about this filter.
-     * @param   mixed  $reserved  For future use.
+     * @param array $config   Configuration information about this filter.
+     * @param mixed $reserved For future use.
      *
-     * @throws SimpleSAML_Error_Exception if the mandatory 'attribute' option is missing.
+     * @throws SimpleSAML\Error\Exception if the mandatory 'attribute' option is missing.
      */
     public function __construct($config, $reserved)
     {
         parent::__construct($config, $reserved);
         assert('is_array($config)');
 
-        foreach ($this->config_param_str as $param) {
+        foreach ($this->configParamStr as $param) {
             if (array_key_exists($param, $config)) {
                 $this->$param = $config[$param];
                 if (!is_string($this->$param)) {
                     throw new Exception(
-                        "DynamicAssurance auth processing filter configuration error: '" . $param . "' should be a string"
+                        "DynamicAssurance auth processing filter configuration error: '"
+                        . $param . "' should be a string"
                     );
                 }
             }
         }
 
-        foreach ($this->config_param_array as $param) {
+        foreach ($this->configParamArray as $param) {
             if (array_key_exists($param, $config)) {
                 if (!empty($this->$param)) {
                     // If i have default values then merge with ones provided in the configuration
@@ -164,7 +172,8 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
                 }
                 if (!is_array($this->$param)) {
                     throw new Exception(
-                        "DynamicAssurance auth processing filter configuration error: '" . $param . "' should be a string"
+                        "DynamicAssurance auth processing filter configuration error: '"
+                        . $param . "' should be a string"
                     );
                 }
             }
@@ -181,57 +190,57 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         assert('is_array($state)');
         assert('array_key_exists("Attributes", $state)');
 
-        SimpleSAML_Logger::debug(
+        Logger::debug(
             "[DynamicAssurance][process] Assurance Map config: " . var_export($this->attributeMap, true)
         );
 
         // Append in the Assurance Attribute all the configured values
-        $assurance_from_candidates = array();
+        $assuranceFromCandidates = [];
         foreach ($this->attributeMap as $attribute => $valAssuranceCandidates) {
             // This attribute is not available in the state
             if (empty($state['Attributes'][$attribute])) {
                 continue;
             }
 
-            SimpleSAML_Logger::debug(
+            Logger::debug(
                 "[DynamicAssurance][process] state['Attributes']['" . $attribute . "']: " . var_export(
                     $state['Attributes'][$attribute],
                     true
                 )
             );
 
-            $preg_match = array();
+            $pregMatch = [];
             // Check if there is a pregMatch key
-            if(!empty($valAssuranceCandidates['pregMatch'])) {
-                $preg_match = $valAssuranceCandidates['pregMatch'];
+            if (!empty($valAssuranceCandidates['pregMatch'])) {
+                $pregMatch = $valAssuranceCandidates['pregMatch'];
             }
 
             // Handle any State Attribute having an exact match into configuration
-            foreach ($state['Attributes'][$attribute] as $attribute_value) {
-                if (!empty($valAssuranceCandidates[$attribute_value])) {
-                    $assurance_from_candidates = array_merge(
-                        $assurance_from_candidates,
-                        $valAssuranceCandidates[$attribute_value]
+            foreach ($state['Attributes'][$attribute] as $attributeValue) {
+                if (!empty($valAssuranceCandidates[$attributeValue])) {
+                    $assuranceFromCandidates = array_merge(
+                        $assuranceFromCandidates,
+                        $valAssuranceCandidates[$attributeValue]
                     );
                 }
             }
 
             // Handle regex Match
-            foreach ($preg_match as $key => $val) {
+            foreach ($pregMatch as $key => $val) {
                 // These are the pass through values
-                if(is_string($val)) {
-                    $passthrough_values        = preg_grep($val, $state['Attributes'][$attribute]);
-                    if(!empty($passthrough_values)) {
-                        $assurance_from_candidates = array_merge(
-                            $assurance_from_candidates,
-                            $passthrough_values
+                if (is_string($val)) {
+                    $passthroughValues = preg_grep($val, $state['Attributes'][$attribute]);
+                    if (!empty($passthroughValues)) {
+                        $assuranceFromCandidates = array_merge(
+                            $assuranceFromCandidates,
+                            $passthroughValues
                         );
                     }
-                } elseif(is_array($val)) {  // Regex with list of Assurance values
-                    foreach ($state['Attributes'][$attribute] as $attribute_values) {
-                        if(preg_match($key, $attribute_values) === 1) {
-                            $assurance_from_candidates = array_merge(
-                                $assurance_from_candidates,
+                } elseif (is_array($val)) { // Regex with list of Assurance values
+                    foreach ($state['Attributes'][$attribute] as $attributeValues) {
+                        if (preg_match($key, $attributeValues) === 1) {
+                            $assuranceFromCandidates = array_merge(
+                                $assuranceFromCandidates,
                                 $val
                             );
                             break;
@@ -246,7 +255,7 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
         if (!empty($this->idpTagMap)) {
             if (!empty($state['saml:sp:IdP'])) {
                 $idpEntityId = $state['saml:sp:IdP'];
-                $idpMetadata = SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler()->getMetaData(
+                $idpMetadata = MetaDataStorageHandler::getMetadataHandler()->getMetaData(
                     $idpEntityId,
                     'saml20-idp-remote'
                 );
@@ -256,42 +265,42 @@ class sspmod_assurance_Auth_Process_DynamicAssurance extends SimpleSAML_Auth_Pro
             }
         }
 
-        foreach ($this->idpTagMap as $idpTag => $assurance_values) {
+        foreach ($this->idpTagMap as $idpTag => $assuranceValues) {
             if (in_array($idpTag, $idpMetadata['tags'])) {
-                if (!empty($assurance_values)) {
-                    $assurance_from_candidates = array_merge(
-                        $assurance_from_candidates,
-                        $assurance_values
+                if (!empty($assuranceValues)) {
+                    $assuranceFromCandidates = array_merge(
+                        $assuranceFromCandidates,
+                        $assuranceValues
                     );
                 }
             }
         }
 
-        $assurance_from_candidates = array_unique($assurance_from_candidates);
+        $assuranceFromCandidates = array_unique($assuranceFromCandidates);
 
-        SimpleSAML_Logger::debug(
-            "[DynamicAssurance][process] Assurance Values: " . var_export($assurance_from_candidates, true)
+        Logger::debug(
+            "[DynamicAssurance][process] Assurance Values: " . var_export($assuranceFromCandidates, true)
         );
 
         // Check the required Assurance values
-        $append_default = true;
-        if(!empty($this->minAssurance)) {
-            $found_values = array_intersect($assurance_from_candidates, $this->minAssurance);
-            $append_default = !empty($found_values) ? false : true;
+        $appendDefault = true;
+        if (!empty($this->minAssurance)) {
+            $foundValues = array_intersect($assuranceFromCandidates, $this->minAssurance);
+            $appendDefault = !empty($foundValues) ? false : true;
         }
 
         // Append the Default Assurance if the Assurance list is empty
-        if((!empty($this->defaultAssurance) && $append_default)
-           || empty($assurance_from_candidates))
-        {
-            $assurance_from_candidates = array_merge($assurance_from_candidates, $this->defaultAssurance);
+        if (
+            (!empty($this->defaultAssurance) && $appendDefault)
+            || empty($assuranceFromCandidates)
+        ) {
+            $assuranceFromCandidates = array_merge($assuranceFromCandidates, $this->defaultAssurance);
         }
         // Remove any duplicates
-        $assurance_from_candidates = array_unique($assurance_from_candidates);
+        $assuranceFromCandidates = array_unique($assuranceFromCandidates);
         // Add Assurance into state
-        if(!empty($assurance_from_candidates)) {
-            $state['Attributes'][$this->attribute] = $assurance_from_candidates;
+        if (!empty($assuranceFromCandidates)) {
+            $state['Attributes'][$this->attribute] = $assuranceFromCandidates;
         }
     }
-
 }
