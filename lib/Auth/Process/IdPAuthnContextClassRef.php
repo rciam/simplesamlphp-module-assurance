@@ -54,7 +54,7 @@ class IdPAuthnContextClassRef extends ProcessingFilter
         parent::__construct($config, $reserved);
         assert('is_array($config)');
 
-        if (!array_key_exists($config['attribute'])) {
+        if (!array_key_exists('attribute', $config)) {
             throw new Exception("Missing attribute option in processing filter.");
         }
         $this->attribute = (string) $config['attribute'];
