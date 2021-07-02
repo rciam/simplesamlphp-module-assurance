@@ -263,15 +263,15 @@ class DynamicAssurance extends ProcessingFilter
                 $idpEntityId = $state['Source']['entityid'];
                 $idpMetadata = $state['Source'];
             }
-        }
 
-        foreach ($this->idpTagMap as $idpTag => $assuranceValues) {
-            if (in_array($idpTag, $idpMetadata['tags'])) {
-                if (!empty($assuranceValues)) {
-                    $assuranceFromCandidates = array_merge(
-                        $assuranceFromCandidates,
-                        $assuranceValues
-                    );
+            foreach ($this->idpTagMap as $idpTag => $assuranceValues) {
+                if (in_array($idpTag, $idpMetadata['tags'])) {
+                    if (!empty($assuranceValues)) {
+                        $assuranceFromCandidates = array_merge(
+                            $assuranceFromCandidates,
+                            $assuranceValues
+                        );
+                    }
                 }
             }
         }
